@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Price Finder</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#101827,#263e62);
+  color: white;
+}
+
+.container {
+  max-width: 850px;
+  margin: 30px auto;
+}
+
+h1 {
+  text-align: center;
+  color: #00ffcc;
+}
+
+.subtitle {
+  text-align: center;
+  color: #ddd;
+}
+
+.search-area {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.search-box, .photo-box {
+  background: #ffffff15;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+.search-box {
+  flex: 2;
+}
+
+.photo-box {
+  flex: 1;
+  text-align: center;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 13px 20px;
+  background: #00ffcc;
+  color: #111;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+button:hover {
+  background: #00cfa8;
+}
+
+input[type="file"] {
+  width: 100%;
+  font-size: 12px;
+}
+
+#preview {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  margin-top: 15px;
+  display: none;
+  border-radius: 10px;
+}
+
+.results {
+  margin-top: 30px;
+  display: none;
+}
+
+.card {
+  background: white;
+  color: #222;
+  padding: 18px;
+  border-radius: 12px;
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card a {
+  background: #1769ff;
+  color: white;
+  padding: 11px;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.notice {
+  color: #ffdc83;
+  font-size: 14px;
+}
+
+@media(max-width:600px) {
+  .search-area {
+    flex-direction: column;
+  }
+
+  .card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🛒 Smart Price Finder</h1>
+<p class="subtitle">
+  Search products and compare shopping websites
+</p>
+
+<div class="search-area">
+
+  <div class="search-box">
+    <h3>🔍 Search Product</h3>
+
+    <input
+      type="text"
+      id="product"
+      placeholder="Enter product name..."
+    >
+
+    <button onclick="findPrices()">
+      Find Best Deals
+    </button>
+  </div>
+
+  <div class="photo-box">
+    <h3>📷 Upload Photo</h3>
+
+    <input
+      type="file"
+      id="photo"
+      accept="image/*"
+      onchange="previewPhoto(event)"
+    >
+
+    <img id="preview" alt="Product preview">
+  </div>
+
+</div>
+
+<div class="results" id="results">
+
+  <h2 id="productTitle"></h2>
+
+  <p class="notice">
+    Compare the prices on these websites.
+    Live prices are not available in this demo.
+  </p>
+
+  <div id="shopList"></div>
+
+</div>
+
+</div>
+
+<script>
+
+function previewPhoto(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById("preview");
+
+  if (!file) {
+    preview.style.display = "none";
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please select an image.");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    preview.src = e.target.result;
+    preview.style.display = "block";
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function findPrices() {
+
+  const product = document
+    .getElementById("product")
+    .value.trim();
+
+  if (product === "") {
+    alert(
+      "Please enter a product name. " +
+      "Photo recognition needs an AI API."
+    );
+    return;
+  }
+
+  const query = encodeURIComponent(product);
+
+  const shops = [
+    {
+      name: "Amazon",
+      url: "https://www.amazon.in/s?k=" + query
+    },
+    {
+      name: "Flipkart",
+      url: "https://www.flipkart.com/search?q=" + query
+    },
+    {
+      name: "Meesho",
+      url: "https://www.meesho.com/search?q=" + query
+    },
+    {
+      name: "Google Shopping",
+      url: "https://www.google.com/search?tbm=shop&q=" + query
+    }
+  ];
+
+  document.getElementById("results")
+    .style.display = "block";
+
+  document.getElementById("productTitle")
+    .textContent = "Results for: " + product;
+
+  const list = document.getElementById("shopList");
+
+  list.innerHTML = "";
+
+  shops.forEach(function(shop) {
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const name = document.createElement("strong");
+    name.textContent = shop.name;
+
+    const link = document.createElement("a");
+    link.href = shop.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Check Price →";
+
+    card.appendChild(name);
+    card.appendChild(link);
+    list.appendChild(card);
+
+  });
+
+}
+
+document.getElementById("product")
+  .addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      findPrices();
+    }
+  });
+
+</script>
+
+</body>
+</html>
+
+
+
